@@ -173,7 +173,7 @@ export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, on
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("storageType")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFormLoading}>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={isFormLoading}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select type" />
