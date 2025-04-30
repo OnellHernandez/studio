@@ -14,11 +14,13 @@ const firebaseAppId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
 
 
 if (!firebaseApiKey || !firebaseAuthDomain || !firebaseProjectId || !firebaseStorageBucket || !firebaseMessagingSenderId || !firebaseAppId) {
-    console.error("Firebase environment variables are missing or incomplete. Check your .env file and ensure all NEXT_PUBLIC_FIREBASE_ variables are set.");
+    console.error("Firebase environment variables are missing or incomplete. Check your .env file or environment configuration and ensure all NEXT_PUBLIC_FIREBASE_ variables are set correctly.");
     // Optionally throw an error during build or runtime in development
     // if (process.env.NODE_ENV === 'development') {
     //   throw new Error("Firebase environment variables are missing or incomplete.");
     // }
+} else {
+    console.log("Firebase environment variables loaded."); // Added log for debugging
 }
 
 
@@ -37,6 +39,7 @@ let app;
 if (!getApps().length) {
     try {
         app = initializeApp(firebaseConfig);
+        console.log("Firebase app initialized successfully."); // Added log
     } catch (error) {
         console.error("Firebase initialization error:", error);
         // Handle initialization error appropriately, maybe show a message to the user
@@ -45,6 +48,7 @@ if (!getApps().length) {
     }
 } else {
     app = getApp();
+    console.log("Firebase app already initialized."); // Added log
 }
 
 
@@ -56,6 +60,7 @@ try {
     auth = getAuth(app);
     db = getFirestore(app);
     // rtdb = getDatabase(app); // Uncomment if using Realtime Database
+    console.log("Firebase Auth and Firestore services retrieved."); // Added log
 } catch (error) {
     console.error("Error getting Firebase services:", error);
     // Handle service retrieval error
