@@ -26,7 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { ComputerEntry, computerSchema } from "@/types/ComputerEntry";
 import { CompatibilityChecklist } from "./CompatibilityChecklist";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 
 interface ComputerFormProps {
@@ -35,6 +35,28 @@ interface ComputerFormProps {
   isLoading?: boolean;
   onCancel?: () => void;
 }
+
+// Function to calculate compatibility based on form values
+// Moved outside the component as it doesn't depend on component state/props
+const calculateCompatibility = (values: Partial<ComputerEntry>): boolean => {
+    const ram = Number(values.ramSize) || 0;
+    const storage = Number(values.storageSize) || 0;
+    const tpm = parseFloat(values.tpmVersion || "0"); // Assume 0 if not set
+
+    const meetsTPM = tpm >= 2.0;
+    const meetsUEFISecureBoot = !!values.uefiSupport && !!values.secureBootEnabled;
+    // Basic CPU check (can be refined with specific lists if needed)
+    // Assuming any modern-ish CPU might be okay for prototype, but requires TPM/UEFI
+    const meetsCPU = !!values.processor;
+    const meetsRAM = ram >= 4;
+    const meetsStorage = storage >= 64;
+
+    // Compatibility verified via tool takes precedence if checked
+    if(values.verifiedByTool) return true;
+
+    return meetsTPM && meetsUEFISecureBoot && meetsCPU && meetsRAM && meetsStorage;
+};
+
 
 export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, onCancel }: ComputerFormProps) {
   const { t } = useLanguage();
@@ -58,44 +80,48 @@ export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, on
       userId: initialData.userId ?? "", // Should be set on submit
       createdAt: initialData.createdAt ?? undefined,
       updatedAt: initialData.updatedAt ?? undefined,
-      isCompatible: initialData.isCompatible ?? false, // Calculated on change
+      isCompatible: initialData.id ? calculateCompatibility(initialData) : false, // Calculate on init if editing
       verifiedByTool: initialData.verifiedByTool ?? false, // Add this field
     },
   });
 
-    // Function to calculate compatibility based on form values
-   const calculateCompatibility = (values: Partial<ComputerEntry>): boolean => {
-     const ram = Number(values.ramSize) || 0;
-     const storage = Number(values.storageSize) || 0;
-     const tpm = parseFloat(values.tpmVersion || "0"); // Assume 0 if not set
-
-     const meetsTPM = tpm >= 2.0;
-     const meetsUEFISecureBoot = !!values.uefiSupport && !!values.secureBootEnabled;
-     // Basic CPU check (can be refined with specific lists if needed)
-     // Assuming any modern-ish CPU might be okay for prototype, but requires TPM/UEFI
-     const meetsCPU = !!values.processor;
-     const meetsRAM = ram >= 4;
-     const meetsStorage = storage >= 64;
-
-     // Compatibility verified via tool takes precedence if checked
-     if(values.verifiedByTool) return true;
-
-     return meetsTPM && meetsUEFISecureBoot && meetsCPU && meetsRAM && meetsStorage;
-   };
-
 
   // Watch form values to update compatibility checklist and calculated field
   const watchedValues = form.watch();
+
+  // Memoize watched values relevant to compatibility to prevent unnecessary effect runs
+  const compatibilityDeps = [
+      watchedValues.processor,
+      watchedValues.ramSize,
+      watchedValues.storageSize,
+      watchedValues.tpmVersion,
+      watchedValues.uefiSupport,
+      watchedValues.secureBootEnabled,
+      watchedValues.verifiedByTool,
+  ];
+
   useEffect(() => {
-    const compatible = calculateCompatibility(watchedValues);
-    form.setValue("isCompatible", compatible, { shouldValidate: false }); // Update calculated field
-  }, [watchedValues, form]);
+    const newCompatibility = calculateCompatibility(watchedValues);
+    const currentCompatibility = form.getValues("isCompatible");
+
+    // Only update the form value if the calculated compatibility has actually changed
+    if (newCompatibility !== currentCompatibility) {
+        form.setValue("isCompatible", newCompatibility, { shouldValidate: false, shouldDirty: true }); // Update calculated field
+    }
+    // Use the memoized dependencies array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, ...compatibilityDeps]);
 
 
   const handleFormSubmit = async (values: ComputerEntry) => {
     setIsSubmitting(true);
     await onSubmit(values);
-    setIsSubmitting(false);
+    // Only set submitting false if onSubmit doesn't cause a redirect/unmount
+    // In this app, onSubmit usually redirects, so setting this might not be necessary
+    // or could cause a brief flicker if the redirect is slightly delayed.
+    // However, if an error occurs in onSubmit, we need to reset the state.
+    // This is handled in the calling components (Add/Edit pages).
+    // setIsSubmitting(false); // Potentially remove this line if Add/Edit handle it fully
   };
 
   const isFormLoading = isLoading || isSubmitting;
@@ -255,11 +281,15 @@ export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, on
                         <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            disabled={!watchedValues.uefiSupport || isFormLoading} // Disable if UEFI is not supported
+                            // Disable if UEFI is not supported OR if the form is currently loading/submitting
+                            disabled={!watchedValues.uefiSupport || isFormLoading}
                         />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                         <FormLabel>{t("secureBootEnabled")}</FormLabel>
+                         {!watchedValues.uefiSupport && (
+                            <p className="text-xs text-muted-foreground">Requires UEFI Support</p>
+                         )}
                     </div>
                  </FormItem>
               )}
@@ -279,6 +309,7 @@ export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, on
                       </FormControl>
                       <div className="space-y-1 leading-none">
                           <FormLabel>{t("compatibilityVerified")}</FormLabel>
+                           <p className="text-xs text-muted-foreground">Overrides checklist if checked</p>
                       </div>
                    </FormItem>
                  )}
@@ -301,7 +332,7 @@ export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, on
           </div>
         </div>
 
-        {/* Compatibility Checklist - Read Only */}
+        {/* Compatibility Checklist - Read Only - Pass watched values directly */}
         <CompatibilityChecklist values={watchedValues} />
 
         <div className="flex justify-end space-x-4">
@@ -312,7 +343,7 @@ export function ComputerForm({ onSubmit, initialData = {}, isLoading = false, on
            )}
            <Button type="submit" disabled={isFormLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 {isFormLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t("save")}
+                {initialData?.id ? t("save") : t("addComputer")} {/* Change button text based on mode */}
            </Button>
         </div>
       </form>
