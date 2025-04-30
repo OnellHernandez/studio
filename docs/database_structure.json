@@ -1,0 +1,71 @@
+{
+  "firestore": {
+    "collections": {
+      "computers": {
+        "description": "Stores information about individual computer entries.",
+        "documents": [
+          {
+            "documentId": "<unique_computer_id_1>",
+            "fields": {
+              "assetTag": {"type": "string", "example": "COMP-DELL-001"},
+              "computerName": {"type": "string", "example": "DESKTOP-LOBBY"},
+              "processor": {"type": "string", "example": "Intel Core i7-8700"},
+              "ramSize": {"type": "number", "example": 16},
+              "storageType": {"type": "string", "enum": ["SSD", "HDD"], "example": "SSD"},
+              "storageSize": {"type": "number", "example": 512},
+              "tpmVersion": {"type": "string", "example": "2.0"},
+              "uefiSupport": {"type": "boolean", "example": true},
+              "secureBootEnabled": {"type": "boolean", "example": true},
+              "isCompatible": {"type": "boolean", "example": true, "description": "Calculated based on other fields or verification tool."},
+              "verifiedByTool": {"type": "boolean", "example": false, "description": "Checked if verified using PC Health Check or similar."},
+              "observations": {"type": "string", "example": "Located in the main lobby. Runs smoothly."},
+              "userId": {"type": "string", "example": "<user_auth_uid_1>", "description": "Firebase Auth User ID of the creator."},
+              "createdAt": {"type": "timestamp", "example": "Firestore Timestamp object"},
+              "updatedAt": {"type": "timestamp", "example": "Firestore Timestamp object"}
+            }
+          },
+          {
+            "documentId": "<unique_computer_id_2>",
+            "fields": {
+              "assetTag": {"type": "string", "example": "LT-HP-045"},
+              "computerName": {"type": "string", "example": "LAPTOP-SALES-02"},
+              "processor": {"type": "string", "example": "Intel Core i5-4570"},
+              "ramSize": {"type": "number", "example": 8},
+              "storageType": {"type": "string", "enum": ["SSD", "HDD"], "example": "HDD"},
+              "storageSize": {"type": "number", "example": 500},
+              "tpmVersion": {"type": "string", "example": "1.2"},
+              "uefiSupport": {"type": "boolean", "example": true},
+              "secureBootEnabled": {"type": "boolean", "example": false},
+              "isCompatible": {"type": "boolean", "example": false},
+              "verifiedByTool": {"type": "boolean", "example": false},
+              "observations": {"type": "string", "example": "Older model, needs replacement soon. TPM is 1.2."},
+              "userId": {"type": "string", "example": "<user_auth_uid_1>"},
+              "createdAt": {"type": "timestamp", "example": "Firestore Timestamp object"},
+              "updatedAt": {"type": "timestamp", "example": "Firestore Timestamp object"}
+            }
+          },
+           {
+            "documentId": "<unique_computer_id_3>",
+            "fields": {
+              "assetTag": {"type": "string", "example": "SRV-DATA-01"},
+              "computerName": {"type": "string", "example": "FILESERVER-MAIN"},
+              "processor": {"type": "string", "example": "Intel Xeon E-2224"},
+              "ramSize": {"type": "number", "example": 32},
+              "storageType": {"type": "string", "enum": ["SSD", "HDD"], "example": "SSD"},
+              "storageSize": {"type": "number", "example": 1024},
+              "tpmVersion": {"type": "string", "example": "2.0"},
+              "uefiSupport": {"type": "boolean", "example": true},
+              "secureBootEnabled": {"type": "boolean", "example": true},
+              "isCompatible": {"type": "boolean", "example": true},
+              "verifiedByTool": {"type": "boolean", "example": true, "description": "Verified compatible with PC Health Check."},
+              "observations": {"type": "string", "example": "Main file server."},
+              "userId": {"type": "string", "example": "<user_auth_uid_2>"},
+              "createdAt": {"type": "timestamp", "example": "Firestore Timestamp object"},
+              "updatedAt": {"type": "timestamp", "example": "Firestore Timestamp object"}
+            }
+          }
+        ]
+      }
+    }
+  }
+}
