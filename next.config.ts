@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Added for Firebase Studio development environment
+  experimental: {
+    allowedDevOrigins: [
+      'https://*-idx-studio-*.cluster-pgviq6mvsncnqxx6kr7pbz65v6.cloudworkstations.dev',
+ 'https://3010-idx-studio-1745978399410.cluster-pgviq6mvsncnqxx6kr7pbz65v6.cloudworkstations.dev'
+    ],
+  },
 };
 
 export default nextConfig;

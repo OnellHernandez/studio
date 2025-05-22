@@ -1,52 +1,91 @@
 {
-  "firestore": {
-    "collections": {
-      "computers": {
-        "description": "Stores information about individual computer entries.",
-        "documents": [
-          {
-            "documentId": "<unique_computer_id_1>",
-            "fields": {
-              "assetTag": {"type": "string", "example": "COMP-DELL-001"},
-              "computerName": {"type": "string", "example": "DESKTOP-LOBBY"},
-              "processor": {"type": "string", "example": "Intel Core i7-8700"},
-              "ramSize": {"type": "number", "example": 16},
-              "storageType": {"type": "string", "enum": ["SSD", "HDD"], "example": "SSD"},
-              "storageSize": {"type": "number", "example": 512},
-              "tpmVersion": {"type": "string", "example": "2.0"},
-              "uefiSupport": {"type": "boolean", "example": true},
-              "secureBootEnabled": {"type": "boolean", "example": true},
-              "isCompatible": {"type": "boolean", "example": true, "description": "Calculated based on other fields or verification tool."},
-              "verifiedByTool": {"type": "boolean", "example": false, "description": "Checked if verified using PC Health Check or similar."},
-              "observations": {"type": "string", "example": "Located in the main lobby. Runs smoothly."},
-              "userId": {"type": "string", "example": "<user_auth_uid_1>", "description": "Firebase Auth User ID of the creator."},
-              "createdAt": {"type": "timestamp", "example": "Firestore Timestamp object"},
-              "updatedAt": {"type": "timestamp", "example": "Firestore Timestamp object"}
-            }
-          },
-          {
-            "documentId": "<unique_computer_id_2>",
-            "fields": {
-              "assetTag": {"type": "string", "example": "LT-HP-045"},
-              "computerName": {"type": "string", "example": "LAPTOP-SALES-02"},
-              "processor": {"type": "string", "example": "Intel Core i5-4570"},
-              "ramSize": {"type": "number", "example": 8},
-              "storageType": {"type": "string", "enum": ["SSD", "HDD"], "example": "HDD"},
-              "storageSize": {"type": "number", "example": 500},
-              "tpmVersion": {"type": "string", "example": "1.2"},
-              "uefiSupport": {"type": "boolean", "example": true},
-              "secureBootEnabled": {"type": "boolean", "example": false},
-              "isCompatible": {"type": "boolean", "example": false},
-              "verifiedByTool": {"type": "boolean", "example": false},
-              "observations": {"type": "string", "example": "Older model, needs replacement soon. TPM is 1.2."},
-              "userId": {"type": "string", "example": "<user_auth_uid_1>"},
-              "createdAt": {"type": "timestamp", "example": "Firestore Timestamp object"},
-              "updatedAt": {"type": "timestamp", "example": "Firestore Timestamp object"}
-            }
-          },
-           {
-            "documentId": "<unique_computer_id_3>",
-            "fields": {
+  "collections": [
+    {
+      "name": "computers",
+      "description": "Stores individual computer entries.",
+      "fields": [
+        {
+          "name": "assetTag",
+          "type": "string",
+          "description": "Unique identifier or asset tag for the computer.",
+          "required": true,
+          "example": "COMP-DELL-001"
+        },
+        {
+          "name": "computerName",
+          "type": "string",
+          "description": "Descriptive name of the computer.",
+          "required": true,
+          "example": "DESKTOP-LOBBY"
+        },
+        {
+          "name": "processor",
+          "type": "string",
+          "description": "Specifications of the computer's processor.",
+          "required": true,
+          "example": "Intel Core i7-8700"
+        },
+        {
+          "name": "ramSize",
+          "type": "number",
+          "description": "Amount of RAM in Gigabytes (GB).",
+          "required": true,
+          "minimum": 1,
+          "example": 16
+        },
+        {
+          "name": "storageType",
+          "type": "string",
+          "description": "Type of primary storage.",
+          "required": true,
+          "allowedValues": ["SSD", "HDD"],
+          "example": "SSD"
+        },
+        {
+          "name": "storageSize",
+          "type": "number",
+          "description": "Capacity of primary storage in Gigabytes (GB).",
+          "required": true,
+          "minimum": 1,
+          "example": 512
+        },
+        {
+          "name": "tpmVersion",
+          "type": "string",
+          "description": "Version of the Trusted Platform Module (TPM) if present.",
+          "required": false,
+          "example": "2.0"
+        },
+        {
+          "name": "uefiSupport",
+          "type": "boolean",
+          "description": "Indicates if the computer has UEFI support.",
+          "required": true,
+          "defaultValue": false,
+          "example": true
+        },
+        {
+          "name": "secureBootEnabled",
+          "type": "boolean",
+          "description": "Indicates if Secure Boot is enabled.",
+          "required": true,
+          "defaultValue": false,
+          "example": true
+        },
+        {
+          "name": "isCompatible",
+          "type": "boolean",
+          "description": "Calculated or manually set field indicating Windows 11 compatibility.",
+          "required": true,
+          "defaultValue": false,
+          "example": true
+        },
+        {
+          "name": "verifiedByTool",
+            "type": "boolean",
+            "description": "Indicates if compatibility was verified using an external tool.",
+            "required": true,
+            "defaultValue": false,
               "assetTag": {"type": "string", "example": "SRV-DATA-01"},
               "computerName": {"type": "string", "example": "FILESERVER-MAIN"},
               "processor": {"type": "string", "example": "Intel Xeon E-2224"},
@@ -57,15 +96,46 @@
               "uefiSupport": {"type": "boolean", "example": true},
               "secureBootEnabled": {"type": "boolean", "example": true},
               "isCompatible": {"type": "boolean", "example": true},
-              "verifiedByTool": {"type": "boolean", "example": true, "description": "Verified compatible with PC Health Check."},
-              "observations": {"type": "string", "example": "Main file server."},
-              "userId": {"type": "string", "example": "<user_auth_uid_2>"},
-              "createdAt": {"type": "timestamp", "example": "Firestore Timestamp object"},
-              "updatedAt": {"type": "timestamp", "example": "Firestore Timestamp object"}
-            }
-          }
-        ]
-      }
+            "example": false
+        },
+        {
+          "name": "observations",
+          "type": "string",
+          "description": "Additional notes or observations.",
+          "required": false,
+          "example": "Located in the main lobby. Runs smoothly."
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "The UID of the Firebase Authentication user who owns this entry.",
+          "required": true,
+          "example": "<user_auth_uid_1>"
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp",
+          "description": "Timestamp when the entry was created (server timestamp).",
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "description": "Timestamp when the entry was last updated (server timestamp).",
+          "required": true
+        }
+      ]
     }
-  }
+  
+  ],
+  "indexes": [
+    {
+      "collection": "computers",
+      "fields": [
+        {"field": "userId", "order": "asc"},
+        {"field": "createdAt", "order": "desc"}
+      ],
+      "description": "Index to query computers by user, ordered by creation date."
+    }
+  ]
 }

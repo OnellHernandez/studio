@@ -1,13 +1,18 @@
+
 "use client";
 
-import { useRouter } from 'next/navigation';import { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Removed getDocs, updateDoc, doc
 import { db } from '@/lib/firebase';
+import type { Firestore } from "firebase/firestore";
+
+import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { ComputerForm } from '@/components/inventory/ComputerForm';
-import { useLanguage } from '@/context/LanguageContext';
 import type { ComputerEntry } from '@/types/ComputerEntry';
 import { useToast } from '@/hooks/use-toast';
+import CryptoJS from 'crypto-js';
 
 export default function AddComputerPage() {
   const router = useRouter();
@@ -15,30 +20,42 @@ export default function AddComputerPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const secretKey = 'clave-super-secreta-123'; 
 
   const handleAddComputer = async (data: ComputerEntry) => {
     if (!user) {
         toast({ title: "Authentication Error", description: "You must be logged in to add computers.", variant: "destructive" });
-        return; // Should be caught by ProtectedLayout, but good practice
+        return; 
     }
     setIsLoading(true);
 
+    const dataToSave = { ...data };
+
+    // Encrypt the computer name with AES if it exists
+    if (dataToSave.computerName && typeof dataToSave.computerName === 'string') {
+        dataToSave.computerName = CryptoJS.AES.encrypt(dataToSave.computerName, secretKey).toString();
+    }
+
     try {
       const computersRef = collection(db, 'computers');
+      // console.log("Data to be saved:", dataToSave);
+
+      // The problematic data migration loop has been removed.
+      // This function will now only focus on adding the new computer entry.
+
       await addDoc(computersRef, {
-        ...data,
-        userId: user.uid, // Ensure userId is set
-        createdAt: serverTimestamp(), // Use server timestamp
+        ...dataToSave,
+        userId: user.uid, 
+        createdAt: serverTimestamp(), 
         updatedAt: serverTimestamp(),
       });
       toast({ title: t('addSuccess') });
-      router.push('/'); // Redirect to inventory list after adding
+      router.push('/'); 
     } catch (error) {
       console.error("Error adding computer:", error);
       toast({ title: t('addError'), variant: 'destructive' });
-      setIsLoading(false); // Only set loading false on error, success redirects
+      setIsLoading(false); 
     }
-    // No finally block to set loading false, as success redirects
   };
 
   return (

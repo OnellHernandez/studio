@@ -10,6 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import type { ComputerEntry, ComputerEntryFirestoreData } from '@/types/ComputerEntry';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
+import CryptoJS from 'crypto-js';
 
 export default function EditComputerPage() {
   const router = useRouter();
@@ -38,6 +39,10 @@ export default function EditComputerPage() {
             const data = docSnap.data() as ComputerEntryFirestoreData;
             // Ensure data belongs to the current user
             if (data.userId === user.uid) {
+              const secretKey = 'clave-super-secreta-123'; 
+              const bytes = CryptoJS.AES.decrypt(data.computerName, secretKey);
+              const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+              data.computerName = decryptedText;
                  // Convert Timestamps back to Date objects or keep as Timestamps if schema expects them
                  // For Zod validation with Timestamps, ensure the schema uses z.instanceof(Timestamp)
                 setComputerData({

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import type { Firestore } from "firebase/firestore";
 // import { getDatabase } from "firebase/database"; // Uncomment if using Realtime Database
 
 // Validate environment variables
@@ -11,6 +12,7 @@ const firebaseStorageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 const firebaseMessagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
 const firebaseAppId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
 // const firebaseDatabaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL; // Uncomment if using Realtime Database
+
 
 
 if (!firebaseApiKey || !firebaseAuthDomain || !firebaseProjectId || !firebaseStorageBucket || !firebaseMessagingSenderId || !firebaseAppId) {
@@ -53,7 +55,8 @@ if (!getApps().length) {
 
 
 let auth;
-let db;
+let db: Firestore;
+
 // let rtdb; // Uncomment if using Realtime Database
 
 try {
