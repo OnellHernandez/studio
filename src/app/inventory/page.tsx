@@ -84,32 +84,25 @@ export default function InventoryPage() {
     }
   };
 
-  const filteredComputers: DisplayComputerEntry[] = useMemo(() => {
+  const filteredComputers: ComputerEntry[] = useMemo(() => {
     const secretKey = 'clave-super-secreta-123';
     return computers
       .map(computer => {
-        let displayName = computer.computerName;
         if (typeof computer.computerName === 'string' && computer.computerName.length > 0) {
           try {
             const bytes = CryptoJS.AES.decrypt(computer.computerName, secretKey);
             if (bytes.sigBytes > 0) {
-              const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-              displayName = decryptedText;
+              computer.computerName = bytes.toString(CryptoJS.enc.Utf8);
             }
-            // If sigBytes is 0, it means decryption resulted in no data (e.g., not encrypted or wrong key)
-            // In this case, displayName remains the original computer.computerName.
           } catch (e) {
-            // Catches errors like "Malformed UTF-8" from bytes.toString() or other decryption issues.
-            // Assume plain text or corrupted if decryption fails.
-            // console.warn(`Decryption error for ${computer.assetTag}: ${e}. Using original name.`);
-            displayName = computer.computerName;
+            console.log(e);
           }
         }
-        return { ...computer, displayName };
+        return computer;
       })
       .filter(comp => {
         const matchesSearch = comp.assetTag.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              comp.displayName.toLowerCase().includes(searchTerm.toLowerCase());
+                              comp.computerName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter = filter === 'all' ||
                              (filter === 'compatible' && comp.isCompatible) ||
                              (filter === 'incompatible' && !comp.isCompatible);
@@ -197,7 +190,7 @@ export default function InventoryPage() {
           {filteredComputers.map((computer) => (
             <Card key={computer.id} className="flex flex-col">
               <CardHeader>
-                <CardTitle className="text-lg truncate">{computer.displayName}</CardTitle>
+                <CardTitle className="text-lg truncate">{computer.computerName}</CardTitle>
                 <CardDescription>
                     {t('assetTag')}: {computer.assetTag}
                 </CardDescription>
@@ -240,7 +233,7 @@ export default function InventoryPage() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>{t('confirmDeleteTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          {t('confirmDeleteMessage')} <br/> ({computer.displayName} - {computer.assetTag})
+                          {t('confirmDeleteMessage')} <br/> ({computer.computerName} - {computer.assetTag})
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

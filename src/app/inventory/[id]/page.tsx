@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 import { format } from 'date-fns'; // For formatting dates
-
+import CryptoJS from 'crypto-js';
 
 export default function ComputerDetailPage() {
   const router = useRouter();
@@ -54,6 +54,10 @@ export default function ComputerDetailPage() {
         if (docSnap.exists()) {
           const data = docSnap.data() as ComputerEntryFirestoreData;
            if (data.userId === user.uid) {
+            const secretKey = 'clave-super-secreta-123'; 
+            const bytes = CryptoJS.AES.decrypt(data.computerName, secretKey);
+            const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+            data.computerName = decryptedText;
                 setComputer({
                     ...data,
                     id: docSnap.id,
